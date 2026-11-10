@@ -26,7 +26,7 @@ const DEFAULT_ADMIN: AdminUser = {
 const DEMO_ACCOUNTS = [
   {
     email: 'admin@droppsion.com',
-    password: 'admin',
+    password: 'admin123',
     user: {
       id: 'usr_super_01',
       name: 'Super Admin',
@@ -37,7 +37,7 @@ const DEMO_ACCOUNTS = [
   },
   {
     email: 'director@droppsion.com',
-    password: 'admin',
+    password: 'admin123',
     user: {
       id: 'usr_director_02',
       name: 'Store Director',
@@ -48,7 +48,7 @@ const DEMO_ACCOUNTS = [
   },
   {
     email: 'ops@droppsion.com',
-    password: 'admin',
+    password: 'admin123',
     user: {
       id: 'usr_ops_03',
       name: 'Logistics Operator',
@@ -102,7 +102,16 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     const email = emailInput.trim().toLowerCase();
     const password = passwordInput.trim();
 
-    // First attempt live backend API authentication
+    if (!email || !email.includes('@')) {
+      setIsLoading(false);
+      return { success: false, error: 'Please enter a valid administrative email address.' };
+    }
+    if (!password || password.length < 4) {
+      setIsLoading(false);
+      return { success: false, error: 'Password must be at least 4 characters long.' };
+    }
+
+    // 1. Live backend API authentication attempt
     try {
       const backendRes = await adminLoginApi(email, password);
       if (backendRes.success && backendRes.user) {
@@ -117,39 +126,40 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(false);
         return { success: true };
       }
+
+      // If the backend actively responded and rejected (e.g. 401 Unauthorized, 403 Deactivated),
+      // we must NOT fall back to local credentials. Respect server rejection immediately.
+      const isNetworkError =
+        !backendRes.message ||
+        backendRes.message.toLowerCase().includes('failed to fetch') ||
+        backendRes.message.toLowerCase().includes('connection failed') ||
+        backendRes.message.toLowerCase().includes('network');
+
+      if (!isNetworkError) {
+        setIsLoading(false);
+        return {
+          success: false,
+          error: backendRes.message || 'Invalid admin credentials.',
+        };
+      }
     } catch {
-      // Backend offline, fallback to local credentials
+      // Backend completely unreachable; proceed only with strict offline accounts
     }
 
-    // Check predefined accounts (allowing prefix match e.g. "admin" or "admin123")
+    // 2. Strict Offline Fallback (only invoked when backend server cannot be reached)
+    // Strictly verify email and password against predefined admin accounts
     const matchedAccount = DEMO_ACCOUNTS.find(
-      (acc) => acc.email === email && (password === acc.password || password === `${acc.password}123` || password === 'droppsion2026')
+      (acc) =>
+        acc.email === email &&
+        (password === acc.password || password === `${acc.password}123` || password === 'admin123')
     );
 
-    let authenticatedUser: AdminUser | null = null;
-
     if (matchedAccount) {
-      authenticatedUser = {
+      const authenticatedUser: AdminUser = {
         ...matchedAccount.user,
         lastLogin: new Date().toISOString(),
       };
-    } else if (email && email.includes('@') && password.length >= 4) {
-      // Accept standard admin emails if password meets minimum length
-      const initials = email
-        .split('@')[0]
-        .slice(0, 2)
-        .toUpperCase();
-      authenticatedUser = {
-        id: `usr_${Date.now()}`,
-        name: email.split('@')[0].replace('.', ' ').toUpperCase(),
-        email,
-        role: 'super_admin',
-        avatar: initials,
-        lastLogin: new Date().toISOString(),
-      };
-    }
 
-    if (authenticatedUser) {
       setUser(authenticatedUser);
       if (rememberMe) {
         localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(authenticatedUser));
@@ -161,10 +171,11 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true };
     }
 
+    // Strictly reject any unregistered or mismatching credentials
     setIsLoading(false);
     return {
       success: false,
-      error: 'Invalid admin credentials. Use admin@droppsion.com / admin123 or click Quick Fill.',
+      error: 'Invalid admin credentials. Account not found or incorrect password.',
     };
   };
 
