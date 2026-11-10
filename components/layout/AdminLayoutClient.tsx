@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
+import { purgeMockData } from '@/lib/storage';
 import { Flame } from 'lucide-react';
 
 export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,9 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   const isLoginPage = pathname === '/login';
 
   useEffect(() => {
+    // Automatically purge any old mock test data from client cache
+    purgeMockData();
+
     if (!isLoading && !isAuthenticated && !isLoginPage) {
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
     }

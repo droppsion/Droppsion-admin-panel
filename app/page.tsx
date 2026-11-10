@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { StatCard } from '@/components/ui/StatCard';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { ADMIN_ORDERS, ADMIN_PRODUCTS, ADMIN_SUPPLIERS } from '@/data/adminMockData';
 import { AdminSupplier } from '@/types';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { fetchDashboardMetrics, syncAllProductsApi, fetchAdminSuppliers, DashboardMetrics } from '@/lib/api';
@@ -28,7 +27,7 @@ export default function AdminDashboardPage() {
   const [isSyncingAll, setIsSyncingAll] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [suppliers, setSuppliers] = useState<AdminSupplier[]>(ADMIN_SUPPLIERS);
+  const [suppliers, setSuppliers] = useState<AdminSupplier[]>([]);
 
   useEffect(() => {
     fetchDashboardMetrics().then((data) => setMetrics(data));
@@ -60,10 +59,10 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const totalCatalogRevenue = metrics?.totalCatalogRevenue ?? ADMIN_PRODUCTS.reduce((acc, p) => acc + p.price * p.stockQuantity, 0);
-  const totalCatalogWholesale = metrics?.totalCatalogWholesale ?? ADMIN_PRODUCTS.reduce((acc, p) => acc + p.dropship.supplierCost * p.stockQuantity, 0);
+  const totalCatalogRevenue = metrics?.totalCatalogRevenue ?? 0;
+  const totalCatalogWholesale = metrics?.totalCatalogWholesale ?? 0;
   const estimatedProfit = metrics?.projectedGrossProfit ?? (totalCatalogRevenue - totalCatalogWholesale);
-  const recentOrders = metrics?.recentOrders || ADMIN_ORDERS.slice(0, 5);
+  const recentOrders = metrics?.recentOrders || [];
 
   return (
     <div className="space-y-8">

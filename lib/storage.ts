@@ -1,7 +1,6 @@
 'use client';
 
 import { AdminProduct, AdminOrder, AdminSupplier, AdminCoupon, AdminUser } from '../types';
-import { ADMIN_PRODUCTS, ADMIN_ORDERS, ADMIN_SUPPLIERS, ADMIN_COUPONS } from '../data/adminMockData';
 
 const STORAGE_KEYS = {
   PRODUCTS: 'novatrend_admin_products',
@@ -19,7 +18,7 @@ const DEFAULT_STAFF: AdminUser[] = [
     role: 'super_admin',
     avatar: 'SA',
     status: 'active',
-    lastLogin: '2026-11-10T10:00:00Z',
+    lastLogin: new Date().toISOString(),
   },
   {
     id: 'usr_director_02',
@@ -28,7 +27,7 @@ const DEFAULT_STAFF: AdminUser[] = [
     role: 'store_manager',
     avatar: 'SD',
     status: 'active',
-    lastLogin: '2026-11-09T18:30:00Z',
+    lastLogin: new Date().toISOString(),
   },
   {
     id: 'usr_ops_03',
@@ -37,7 +36,7 @@ const DEFAULT_STAFF: AdminUser[] = [
     role: 'logistics_operator',
     avatar: 'LO',
     status: 'active',
-    lastLogin: '2026-11-08T14:15:00Z',
+    lastLogin: new Date().toISOString(),
   },
 ];
 
@@ -50,7 +49,6 @@ function getStored<T>(key: string, fallback: T): T {
   try {
     const raw = window.localStorage.getItem(key);
     if (!raw) {
-      window.localStorage.setItem(key, JSON.stringify(fallback));
       return fallback;
     }
     return JSON.parse(raw);
@@ -69,9 +67,36 @@ function setStored<T>(key: string, value: T): void {
   }
 }
 
+/**
+ * Purge any legacy mock test data cached in the browser's localStorage
+ */
+export function purgeMockData(): void {
+  if (!isClient()) return;
+  try {
+    const productsRaw = window.localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+    if (productsRaw && productsRaw.includes('prod-001')) {
+      window.localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
+    }
+    const ordersRaw = window.localStorage.getItem(STORAGE_KEYS.ORDERS);
+    if (ordersRaw && ordersRaw.includes('ORD-9102-NV')) {
+      window.localStorage.removeItem(STORAGE_KEYS.ORDERS);
+    }
+    const suppliersRaw = window.localStorage.getItem(STORAGE_KEYS.SUPPLIERS);
+    if (suppliersRaw && suppliersRaw.includes('sup-001')) {
+      window.localStorage.removeItem(STORAGE_KEYS.SUPPLIERS);
+    }
+    const couponsRaw = window.localStorage.getItem(STORAGE_KEYS.COUPONS);
+    if (couponsRaw && couponsRaw.includes('SAVE15')) {
+      window.localStorage.removeItem(STORAGE_KEYS.COUPONS);
+    }
+  } catch (e) {
+    console.warn('Notice: localStorage purge warning:', e);
+  }
+}
+
 // ---------------- PRODUCTS ----------------
 export function getLocalProducts(): AdminProduct[] {
-  return getStored<AdminProduct[]>(STORAGE_KEYS.PRODUCTS, ADMIN_PRODUCTS);
+  return getStored<AdminProduct[]>(STORAGE_KEYS.PRODUCTS, []);
 }
 
 export function saveLocalProduct(product: AdminProduct): AdminProduct[] {
@@ -117,7 +142,7 @@ export function toggleLocalProductActive(id: string): AdminProduct[] {
 
 // ---------------- COUPONS ----------------
 export function getLocalCoupons(): AdminCoupon[] {
-  return getStored<AdminCoupon[]>(STORAGE_KEYS.COUPONS, ADMIN_COUPONS);
+  return getStored<AdminCoupon[]>(STORAGE_KEYS.COUPONS, []);
 }
 
 export function saveLocalCoupon(coupon: AdminCoupon): AdminCoupon[] {
@@ -153,7 +178,7 @@ export function toggleLocalCouponActive(code: string): AdminCoupon[] {
 
 // ---------------- SUPPLIERS ----------------
 export function getLocalSuppliers(): AdminSupplier[] {
-  return getStored<AdminSupplier[]>(STORAGE_KEYS.SUPPLIERS, ADMIN_SUPPLIERS);
+  return getStored<AdminSupplier[]>(STORAGE_KEYS.SUPPLIERS, []);
 }
 
 export function saveLocalSupplier(supplier: AdminSupplier): AdminSupplier[] {
@@ -195,7 +220,7 @@ export function toggleLocalSupplierActive(id: string): AdminSupplier[] {
 
 // ---------------- ORDERS ----------------
 export function getLocalOrders(): AdminOrder[] {
-  return getStored<AdminOrder[]>(STORAGE_KEYS.ORDERS, ADMIN_ORDERS);
+  return getStored<AdminOrder[]>(STORAGE_KEYS.ORDERS, []);
 }
 
 export function updateLocalOrderStatus(id: string, status: AdminOrder['status']): AdminOrder[] {
