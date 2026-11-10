@@ -1,8 +1,8 @@
 {
-  "name": "novatrend-admin-panel",
+  "name": "droppsion-admin-panel",
   "version": "1.0.0",
   "private": true,
-  "description": "Executive command & dropshipping control panel for NovaTrend",
+  "description": "Executive command & dropshipping control panel for Droppsion",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",

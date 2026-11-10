@@ -17,7 +17,7 @@ interface AuthContextType {
 const DEFAULT_ADMIN: AdminUser = {
   id: 'usr_super_01',
   name: 'Store Director',
-  email: 'admin@novatrend.com',
+  email: 'admin@droppsion.com',
   role: 'super_admin',
   avatar: 'SD',
   lastLogin: new Date().toISOString(),
@@ -25,41 +25,41 @@ const DEFAULT_ADMIN: AdminUser = {
 
 const DEMO_ACCOUNTS = [
   {
-    email: 'admin@novatrend.com',
+    email: 'admin@droppsion.com',
     password: 'admin',
     user: {
       id: 'usr_super_01',
       name: 'Super Admin',
-      email: 'admin@novatrend.com',
+      email: 'admin@droppsion.com',
       role: 'super_admin' as const,
       avatar: 'SA',
     },
   },
   {
-    email: 'director@novatrend.com',
+    email: 'director@droppsion.com',
     password: 'admin',
     user: {
       id: 'usr_director_02',
       name: 'Store Director',
-      email: 'director@novatrend.com',
+      email: 'director@droppsion.com',
       role: 'store_manager' as const,
       avatar: 'SD',
     },
   },
   {
-    email: 'ops@novatrend.com',
+    email: 'ops@droppsion.com',
     password: 'admin',
     user: {
       id: 'usr_ops_03',
       name: 'Logistics Operator',
-      email: 'ops@novatrend.com',
+      email: 'ops@droppsion.com',
       role: 'logistics_operator' as const,
       avatar: 'LO',
     },
   },
 ];
 
-const AUTH_STORAGE_KEY = 'novatrend_admin_auth_session';
+const AUTH_STORAGE_KEY = 'droppsion_admin_auth_session';
 
 const AdminAuthContext = createContext<AuthContextType>({
   user: null,
@@ -109,10 +109,10 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         setUser(backendRes.user);
         if (rememberMe) {
           localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(backendRes.user));
-          if (backendRes.token) localStorage.setItem('novatrend_admin_token', backendRes.token);
+          if (backendRes.token) localStorage.setItem('droppsion_admin_token', backendRes.token);
         } else {
           sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(backendRes.user));
-          if (backendRes.token) sessionStorage.setItem('novatrend_admin_token', backendRes.token);
+          if (backendRes.token) sessionStorage.setItem('droppsion_admin_token', backendRes.token);
         }
         setIsLoading(false);
         return { success: true };
@@ -123,7 +123,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check predefined accounts (allowing prefix match e.g. "admin" or "admin123")
     const matchedAccount = DEMO_ACCOUNTS.find(
-      (acc) => acc.email === email && (password === acc.password || password === `${acc.password}123` || password === 'novatrend2026')
+      (acc) => acc.email === email && (password === acc.password || password === `${acc.password}123` || password === 'droppsion2026')
     );
 
     let authenticatedUser: AdminUser | null = null;
@@ -164,7 +164,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
     return {
       success: false,
-      error: 'Invalid admin credentials. Use admin@novatrend.com / admin123 or click Quick Fill.',
+      error: 'Invalid admin credentials. Use admin@droppsion.com / admin123 or click Quick Fill.',
     };
   };
 

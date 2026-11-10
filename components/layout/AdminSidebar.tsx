@@ -40,7 +40,7 @@ export function AdminSidebar() {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-white text-base tracking-tight font-heading">NovaTrend</span>
+              <span className="font-bold text-white text-base tracking-tight font-heading">Droppsion</span>
               <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-orange-500/20 text-[#FF4D00] border border-orange-500/30">
                 Admin
               </span>

@@ -82,7 +82,7 @@ function AdminLoginForm() {
 
           <div className="flex items-center justify-center gap-2 mb-1">
             <h1 className="text-2xl font-black tracking-tight text-white font-heading">
-              NovaTrend
+              Droppsion
             </h1>
             <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-orange-500/20 text-[#FF4D00] border border-orange-500/30">
               Command Center
@@ -136,7 +136,7 @@ function AdminLoginForm() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@novatrend.com"
+                  placeholder="admin@droppsion.com"
                   required
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-900/90 border border-gray-800 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00] transition-colors"
                 />
@@ -217,26 +217,26 @@ function AdminLoginForm() {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
-                onClick={() => handleQuickFill('admin@novatrend.com', 'admin123')}
+                onClick={() => handleQuickFill('admin@droppsion.com', 'admin123')}
                 className="p-2.5 rounded-xl bg-gray-900/80 hover:bg-gray-800/90 border border-gray-800 hover:border-orange-500/40 text-left transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white text-[11px] group-hover:text-[#FF4D00]">Super Admin</span>
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                 </div>
-                <p className="font-mono text-[9px] text-gray-500 truncate mt-0.5">admin@novatrend.com</p>
+                <p className="font-mono text-[9px] text-gray-500 truncate mt-0.5">admin@droppsion.com</p>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleQuickFill('director@novatrend.com', 'admin123')}
+                onClick={() => handleQuickFill('director@droppsion.com', 'admin123')}
                 className="p-2.5 rounded-xl bg-gray-900/80 hover:bg-gray-800/90 border border-gray-800 hover:border-orange-500/40 text-left transition-all group"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white text-[11px] group-hover:text-[#FF4D00]">Store Director</span>
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                 </div>
-                <p className="font-mono text-[9px] text-gray-500 truncate mt-0.5">director@novatrend.com</p>
+                <p className="font-mono text-[9px] text-gray-500 truncate mt-0.5">director@droppsion.com</p>
               </button>
             </div>
           </div>
@@ -255,7 +255,7 @@ function AdminLoginForm() {
             <span>ISO 27001 Compliant</span>
           </div>
           <p className="text-[10px] text-gray-600">
-            &copy; 2026 NovaTrend Operations Inc. Unauthorized access strictly prohibited.
+            &copy; 2026 Droppsion Operations Inc. Unauthorized access strictly prohibited.
           </p>
         </div>
 

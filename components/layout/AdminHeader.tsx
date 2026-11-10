@@ -118,7 +118,7 @@ export function AdminHeader() {
             <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-200/90 py-2 z-50 animate-fadeIn">
               <div className="px-4 py-2.5 border-b border-gray-100">
                 <p className="text-xs font-bold text-gray-900">{user?.name || 'Admin'}</p>
-                <p className="text-[11px] text-gray-400 truncate">{user?.email || 'admin@novatrend.com'}</p>
+                <p className="text-[11px] text-gray-400 truncate">{user?.email || 'admin@droppsion.com'}</p>
                 <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded bg-orange-50 text-[#FF4D00] font-mono text-[9px] font-bold uppercase border border-orange-100">
                   <ShieldCheck className="w-2.5 h-2.5" />
                   <span>{user?.role || 'super_admin'}</span>

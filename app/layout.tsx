@@ -5,7 +5,7 @@ import { AdminAuthProvider } from '@/context/AdminAuthContext';
 import { AdminLayoutClient } from '@/components/layout/AdminLayoutClient';
 
 export const metadata: Metadata = {
-  title: 'NovaTrend Command Center | Dropship Admin Panel',
+  title: 'Droppsion Command Center | Dropship Admin Panel',
   description: 'Enterprise operations, automated fulfillment, and catalog control panel',
 };
 

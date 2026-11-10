@@ -42,7 +42,7 @@ export default function AdminSettingsPage() {
 
   // Admin Profile form
   const [adminName, setAdminName] = useState(user?.name || 'Store Director');
-  const [adminEmail, setAdminEmail] = useState(user?.email || 'admin@novatrend.com');
+  const [adminEmail, setAdminEmail] = useState(user?.email || 'admin@droppsion.com');
   const [newPassword, setNewPassword] = useState('');
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
 
@@ -526,7 +526,7 @@ export default function AdminSettingsPage() {
                 <label className="block text-gray-700 font-semibold mb-1">Email Address</label>
                 <input
                   type="email"
-                  placeholder="jordan@novatrend.com"
+                  placeholder="jordan@droppsion.com"
                   value={newStaffEmail}
                   onChange={(e) => setNewStaffEmail(e.target.value)}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium focus:outline-none focus:border-[#FF4D00]"

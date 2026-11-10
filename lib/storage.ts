@@ -3,18 +3,18 @@
 import { AdminProduct, AdminOrder, AdminSupplier, AdminCoupon, AdminUser } from '../types';
 
 const STORAGE_KEYS = {
-  PRODUCTS: 'novatrend_admin_products',
-  ORDERS: 'novatrend_admin_orders',
-  SUPPLIERS: 'novatrend_admin_suppliers',
-  COUPONS: 'novatrend_admin_coupons',
-  USERS: 'novatrend_admin_users',
+  PRODUCTS: 'droppsion_admin_products',
+  ORDERS: 'droppsion_admin_orders',
+  SUPPLIERS: 'droppsion_admin_suppliers',
+  COUPONS: 'droppsion_admin_coupons',
+  USERS: 'droppsion_admin_users',
 };
 
 const DEFAULT_STAFF: AdminUser[] = [
   {
     id: 'usr_super_01',
     name: 'Super Admin',
-    email: 'admin@novatrend.com',
+    email: 'admin@droppsion.com',
     role: 'super_admin',
     avatar: 'SA',
     status: 'active',
@@ -23,7 +23,7 @@ const DEFAULT_STAFF: AdminUser[] = [
   {
     id: 'usr_director_02',
     name: 'Store Director',
-    email: 'director@novatrend.com',
+    email: 'director@droppsion.com',
     role: 'store_manager',
     avatar: 'SD',
     status: 'active',
@@ -32,7 +32,7 @@ const DEFAULT_STAFF: AdminUser[] = [
   {
     id: 'usr_ops_03',
     name: 'Logistics Operator',
-    email: 'ops@novatrend.com',
+    email: 'ops@droppsion.com',
     role: 'logistics_operator',
     avatar: 'LO',
     status: 'active',
