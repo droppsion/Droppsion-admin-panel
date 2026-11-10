@@ -151,7 +151,7 @@ export async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
 }
 
 // ============================================================================
-// PRODUCTS CRUD PROVISIONS
+// PRODUCTS CRUD PROVISIONS WITH VALIDATION
 // ============================================================================
 
 export async function fetchAdminProducts(): Promise<{
@@ -189,7 +189,6 @@ export async function fetchAdminProducts(): Promise<{
           },
         }));
 
-        // Merge with local storage
         mapped.forEach((p) => saveLocalProduct(p));
         return { products: mapped, source: data.source || 'mongodb' };
       }
@@ -203,40 +202,64 @@ export async function fetchAdminProducts(): Promise<{
 
 export async function createAdminProductApi(product: AdminProduct): Promise<{
   success: boolean;
-  product: AdminProduct;
+  product?: AdminProduct;
   message?: string;
+  errors?: any[];
 }> {
-  // Always persist locally
-  saveLocalProduct(product);
+  // Client-side quick validation
+  if (!product.title || product.title.trim().length < 2) {
+    return { success: false, message: 'Title is required and must be at least 2 characters.' };
+  }
+  if (product.price === undefined || product.price < 0 || isNaN(product.price)) {
+    return { success: false, message: 'Price must be a non-negative number.' };
+  }
+  if (!product.category || product.category.trim() === '') {
+    return { success: false, message: 'Category is required.' };
+  }
 
   try {
     const res = await fetch(`${API_BASE}/products`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: product.title,
-        slug: product.slug,
-        category: product.category,
-        price: product.price,
-        originalPrice: product.originalPrice,
-        stockQuantity: product.stockQuantity,
-        inStock: product.inStock,
-        isActive: product.isActive,
-        badge: product.badge,
+        title: product.title.trim(),
+        slug: product.slug?.trim(),
+        category: product.category.trim(),
+        price: Number(product.price),
+        originalPrice: product.originalPrice ? Number(product.originalPrice) : undefined,
+        stockQuantity: Number(product.stockQuantity) || 0,
+        inStock: product.inStock ?? true,
+        isActive: product.isActive ?? true,
+        badge: product.badge || undefined,
         images: [product.image],
         description: product.description,
         dropship: product.dropship,
       }),
     });
-    if (res.ok) {
-      const data = await res.json();
-      return { success: true, product: data.product || product, message: 'Product created successfully' };
+
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data?.success) {
+      const created = data.product || product;
+      saveLocalProduct(created);
+      return { success: true, product: created, message: 'Product created successfully' };
+    }
+
+    if (data && !data.success) {
+      return {
+        success: false,
+        message: data.message || 'Product validation failed on server',
+        errors: data.errors,
+      };
     }
   } catch {
-    // Fallback succeeds locally
+    // Server unreachable: fallback to local cache
+    saveLocalProduct(product);
+    return { success: true, product, message: 'Product saved to local storage (server offline)' };
   }
 
-  return { success: true, product, message: 'Product added to catalog (cached)' };
+  saveLocalProduct(product);
+  return { success: true, product, message: 'Product added to catalog' };
 }
 
 export async function updateAdminProductApi(
@@ -246,20 +269,40 @@ export async function updateAdminProductApi(
   success: boolean;
   products: AdminProduct[];
   message?: string;
+  errors?: any[];
 }> {
-  const updatedList = updateLocalProduct(id, updates);
+  if (!id || id.trim() === '') {
+    return { success: false, products: getLocalProducts(), message: 'Product ID is required for update.' };
+  }
 
   try {
-    await fetch(`${API_BASE}/products/${id}`, {
+    const res = await fetch(`${API_BASE}/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
+
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data?.success) {
+      const updatedList = updateLocalProduct(id, updates);
+      return { success: true, products: updatedList, message: 'Product updated successfully' };
+    }
+
+    if (data && !data.success) {
+      return {
+        success: false,
+        products: getLocalProducts(),
+        message: data.message || 'Product update failed on server',
+        errors: data.errors,
+      };
+    }
   } catch {
-    // Backend offline fallback
+    // Server unreachable
   }
 
-  return { success: true, products: updatedList, message: 'Product updated successfully' };
+  const updatedList = updateLocalProduct(id, updates);
+  return { success: true, products: updatedList, message: 'Product updated in local catalog' };
 }
 
 export async function deleteAdminProductApi(id: string): Promise<{
@@ -267,16 +310,29 @@ export async function deleteAdminProductApi(id: string): Promise<{
   products: AdminProduct[];
   message?: string;
 }> {
-  const updatedList = deleteLocalProduct(id);
-
-  try {
-    await fetch(`${API_BASE}/products/${id}`, {
-      method: 'DELETE',
-    });
-  } catch {
-    // Backend offline fallback
+  if (!id || id.trim() === '') {
+    return { success: false, products: getLocalProducts(), message: 'Product ID is required for deletion.' };
   }
 
+  try {
+    const res = await fetch(`${API_BASE}/products/${id}`, {
+      method: 'DELETE',
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        products: getLocalProducts(),
+        message: data.message || 'Failed to delete product from database',
+      };
+    }
+  } catch {
+    // Server unreachable
+  }
+
+  const updatedList = deleteLocalProduct(id);
   return { success: true, products: updatedList, message: 'Product deleted from catalog' };
 }
 
@@ -284,18 +340,29 @@ export async function toggleProductActiveApi(id: string): Promise<{
   success: boolean;
   products: AdminProduct[];
   isActive: boolean;
+  message?: string;
 }> {
   const updatedList = toggleLocalProductActive(id);
   const current = updatedList.find((p) => p.id === id);
 
   try {
-    await fetch(`${API_BASE}/products/${id}/status`, {
+    const res = await fetch(`${API_BASE}/products/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isActive: current?.isActive, inStock: current?.inStock }),
     });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        products: updatedList,
+        isActive: current?.isActive ?? true,
+        message: data.message || 'Status toggle rejected by server',
+      };
+    }
   } catch {
-    // Backend offline fallback
+    // Server offline fallback
   }
 
   return {
@@ -316,7 +383,7 @@ export async function syncSingleProductApi(productId: string): Promise<{
       headers: { 'Content-Type': 'application/json' },
     });
     return await res.json();
-  } catch (error: any) {
+  } catch {
     return {
       success: true,
       message: 'EDI stock synchronized with partner warehouse',
@@ -349,7 +416,7 @@ export async function syncAllProductsApi(): Promise<{
 }
 
 // ============================================================================
-// ORDERS CRUD PROVISIONS
+// ORDERS CRUD PROVISIONS WITH VALIDATION
 // ============================================================================
 
 export async function fetchAdminOrders(status?: string, search?: string): Promise<{
@@ -400,40 +467,65 @@ export async function updateOrderStatusApi(
   orders: AdminOrder[];
   message?: string;
 }> {
-  const updatedList = updateLocalOrderStatus(orderId, status);
+  if (!orderId || !status) {
+    return { success: false, orders: getLocalOrders(), message: 'Order ID and status are required' };
+  }
 
   try {
-    await fetch(`${API_BASE}/orders/${orderId}/status`, {
+    const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        orders: getLocalOrders(),
+        message: data.message || 'Failed to update order status',
+      };
+    }
   } catch {
     // Backend offline fallback
   }
 
+  const updatedList = updateLocalOrderStatus(orderId, status);
   return { success: true, orders: updatedList, message: `Order marked as ${status}` };
 }
 
 export async function deleteAdminOrderApi(orderId: string): Promise<{
   success: boolean;
   orders: AdminOrder[];
+  message?: string;
 }> {
-  const updatedList = deleteLocalOrder(orderId);
+  if (!orderId) {
+    return { success: false, orders: getLocalOrders(), message: 'Order ID is required' };
+  }
 
   try {
-    await fetch(`${API_BASE}/orders/${orderId}`, {
+    const res = await fetch(`${API_BASE}/orders/${orderId}`, {
       method: 'DELETE',
     });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        orders: getLocalOrders(),
+        message: data.message || 'Failed to delete order',
+      };
+    }
   } catch {
     // Backend offline fallback
   }
 
-  return { success: true, orders: updatedList };
+  const updatedList = deleteLocalOrder(orderId);
+  return { success: true, orders: updatedList, message: 'Order deleted successfully' };
 }
 
 // ============================================================================
-// SUPPLIERS CRUD PROVISIONS
+// SUPPLIERS CRUD PROVISIONS WITH VALIDATION
 // ============================================================================
 
 export async function fetchAdminSuppliers(): Promise<{
@@ -474,20 +566,41 @@ export async function fetchAdminSuppliers(): Promise<{
 export async function createAdminSupplierApi(supplier: AdminSupplier): Promise<{
   success: boolean;
   suppliers: AdminSupplier[];
+  message?: string;
+  errors?: any[];
 }> {
-  const updatedList = saveLocalSupplier(supplier);
+  if (!supplier.name || supplier.name.trim().length < 2) {
+    return { success: false, suppliers: getLocalSuppliers(), message: 'Supplier name must be at least 2 characters.' };
+  }
 
   try {
-    await fetch(`${API_BASE}/dropship/suppliers`, {
+    const res = await fetch(`${API_BASE}/dropship/suppliers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(supplier),
     });
+
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data?.success) {
+      const updatedList = saveLocalSupplier(data.supplier || supplier);
+      return { success: true, suppliers: updatedList, message: 'Supplier added successfully' };
+    }
+
+    if (data && !data.success) {
+      return {
+        success: false,
+        suppliers: getLocalSuppliers(),
+        message: data.message || 'Validation failed on server',
+        errors: data.errors,
+      };
+    }
   } catch {
     // Fallback
   }
 
-  return { success: true, suppliers: updatedList };
+  const updatedList = saveLocalSupplier(supplier);
+  return { success: true, suppliers: updatedList, message: 'Supplier added (local cache)' };
 }
 
 export async function updateAdminSupplierApi(
@@ -496,32 +609,88 @@ export async function updateAdminSupplierApi(
 ): Promise<{
   success: boolean;
   suppliers: AdminSupplier[];
+  message?: string;
 }> {
-  const updatedList = updateLocalSupplier(id, updates);
+  if (!id) {
+    return { success: false, suppliers: getLocalSuppliers(), message: 'Supplier ID is required' };
+  }
 
   try {
-    await fetch(`${API_BASE}/dropship/suppliers/${id}`, {
+    const res = await fetch(`${API_BASE}/dropship/suppliers/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        suppliers: getLocalSuppliers(),
+        message: data.message || 'Failed to update supplier',
+      };
+    }
   } catch {
     // Fallback
   }
 
-  return { success: true, suppliers: updatedList };
+  const updatedList = updateLocalSupplier(id, updates);
+  return { success: true, suppliers: updatedList, message: 'Supplier updated successfully' };
 }
 
 export async function deleteAdminSupplierApi(id: string): Promise<{
   success: boolean;
   suppliers: AdminSupplier[];
+  message?: string;
 }> {
-  const updatedList = deleteLocalSupplier(id);
+  if (!id) {
+    return { success: false, suppliers: getLocalSuppliers(), message: 'Supplier ID is required' };
+  }
 
   try {
-    await fetch(`${API_BASE}/dropship/suppliers/${id}`, {
+    const res = await fetch(`${API_BASE}/dropship/suppliers/${id}`, {
       method: 'DELETE',
     });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        suppliers: getLocalSuppliers(),
+        message: data.message || 'Failed to delete supplier',
+      };
+    }
+  } catch {
+    // Fallback
+  }
+
+  const updatedList = deleteLocalSupplier(id);
+  return { success: true, suppliers: updatedList, message: 'Supplier deleted successfully' };
+}
+
+export async function toggleSupplierActiveApi(id: string): Promise<{
+  success: boolean;
+  suppliers: AdminSupplier[];
+  message?: string;
+}> {
+  const updatedList = toggleLocalSupplierActive(id);
+  const current = updatedList.find((s) => s.id === id);
+
+  try {
+    const res = await fetch(`${API_BASE}/dropship/suppliers/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: current?.status }),
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        suppliers: updatedList,
+        message: data.message || 'Failed to update supplier status',
+      };
+    }
   } catch {
     // Fallback
   }
@@ -529,16 +698,8 @@ export async function deleteAdminSupplierApi(id: string): Promise<{
   return { success: true, suppliers: updatedList };
 }
 
-export async function toggleSupplierActiveApi(id: string): Promise<{
-  success: boolean;
-  suppliers: AdminSupplier[];
-}> {
-  const updatedList = toggleLocalSupplierActive(id);
-  return { success: true, suppliers: updatedList };
-}
-
 // ============================================================================
-// COUPONS CRUD PROVISIONS
+// COUPONS CRUD PROVISIONS WITH VALIDATION
 // ============================================================================
 
 export async function fetchAdminCoupons(): Promise<{
@@ -575,20 +736,49 @@ export async function createAdminCouponApi(couponData: AdminCoupon): Promise<{
   success: boolean;
   coupons: AdminCoupon[];
   message?: string;
+  errors?: any[];
 }> {
-  const updatedList = saveLocalCoupon(couponData);
+  if (!couponData.code || couponData.code.trim().length < 2) {
+    return { success: false, coupons: getLocalCoupons(), message: 'Coupon code must be at least 2 characters.' };
+  }
+  if (!['percentage', 'fixed'].includes(couponData.discountType)) {
+    return { success: false, coupons: getLocalCoupons(), message: 'Discount type must be percentage or fixed.' };
+  }
+  if (couponData.discountValue <= 0 || isNaN(couponData.discountValue)) {
+    return { success: false, coupons: getLocalCoupons(), message: 'Discount value must be greater than 0.' };
+  }
+  if (couponData.discountType === 'percentage' && couponData.discountValue > 100) {
+    return { success: false, coupons: getLocalCoupons(), message: 'Percentage discount cannot exceed 100%.' };
+  }
 
   try {
-    await fetch(`${API_BASE}/coupons`, {
+    const res = await fetch(`${API_BASE}/coupons`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(couponData),
     });
+
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data?.success) {
+      const updatedList = saveLocalCoupon(couponData);
+      return { success: true, coupons: updatedList, message: 'Coupon created successfully' };
+    }
+
+    if (data && !data.success) {
+      return {
+        success: false,
+        coupons: getLocalCoupons(),
+        message: data.message || 'Validation error from server',
+        errors: data.errors,
+      };
+    }
   } catch {
     // Fallback
   }
 
-  return { success: true, coupons: updatedList, message: 'Coupon created successfully' };
+  const updatedList = saveLocalCoupon(couponData);
+  return { success: true, coupons: updatedList, message: 'Coupon created (local storage)' };
 }
 
 export async function updateAdminCouponApi(
@@ -597,44 +787,89 @@ export async function updateAdminCouponApi(
 ): Promise<{
   success: boolean;
   coupons: AdminCoupon[];
+  message?: string;
 }> {
-  const updatedList = updateLocalCoupon(code, updates);
+  if (!code) {
+    return { success: false, coupons: getLocalCoupons(), message: 'Coupon code is required' };
+  }
 
   try {
-    await fetch(`${API_BASE}/coupons/${code}`, {
+    const res = await fetch(`${API_BASE}/coupons/${code}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        coupons: getLocalCoupons(),
+        message: data.message || 'Failed to update coupon',
+      };
+    }
   } catch {
     // Fallback
   }
 
-  return { success: true, coupons: updatedList };
+  const updatedList = updateLocalCoupon(code, updates);
+  return { success: true, coupons: updatedList, message: 'Coupon updated successfully' };
 }
 
 export async function deleteAdminCouponApi(code: string): Promise<{
   success: boolean;
   coupons: AdminCoupon[];
+  message?: string;
 }> {
-  const updatedList = deleteLocalCoupon(code);
+  if (!code) {
+    return { success: false, coupons: getLocalCoupons(), message: 'Coupon code is required' };
+  }
 
   try {
-    await fetch(`${API_BASE}/coupons/${code}`, {
+    const res = await fetch(`${API_BASE}/coupons/${code}`, {
       method: 'DELETE',
     });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        coupons: getLocalCoupons(),
+        message: data.message || 'Failed to delete coupon',
+      };
+    }
   } catch {
     // Fallback
   }
 
-  return { success: true, coupons: updatedList };
+  const updatedList = deleteLocalCoupon(code);
+  return { success: true, coupons: updatedList, message: 'Coupon deleted successfully' };
 }
 
 export async function toggleCouponActiveApi(code: string): Promise<{
   success: boolean;
   coupons: AdminCoupon[];
+  message?: string;
 }> {
   const updatedList = toggleLocalCouponActive(code);
+
+  try {
+    const res = await fetch(`${API_BASE}/coupons/${code}/status`, {
+      method: 'PATCH',
+    });
+
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        coupons: updatedList,
+        message: data.message || 'Failed to toggle coupon status',
+      };
+    }
+  } catch {
+    // Fallback
+  }
+
   return { success: true, coupons: updatedList };
 }
 
@@ -693,7 +928,7 @@ export async function triggerDbSeedApi(): Promise<{
 }
 
 // ============================================================================
-// ADMIN CONSOLE AUTHENTICATION & STAFF ACCOUNTS API
+// ADMIN CONSOLE AUTHENTICATION & STAFF ACCOUNTS API WITH VALIDATION
 // ============================================================================
 
 export async function adminLoginApi(
@@ -705,15 +940,23 @@ export async function adminLoginApi(
   user?: AdminUser;
   message?: string;
 }> {
+  if (!email || !email.includes('@')) {
+    return { success: false, message: 'Please enter a valid administrative email address.' };
+  }
+  if (!password || password.length < 4) {
+    return { success: false, message: 'Password must be at least 4 characters long.' };
+  }
+
   try {
     const res = await fetch(`${API_BASE}/auth/admin/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
     });
 
-    const data = await res.json();
-    if (res.ok && data.success) {
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data?.success) {
       return {
         success: true,
         token: data.token,
@@ -721,9 +964,10 @@ export async function adminLoginApi(
         message: data.message,
       };
     }
+
     return {
       success: false,
-      message: data.message || 'Authentication rejected by security gateway',
+      message: data?.message || 'Authentication rejected by security gateway',
     };
   } catch (error: any) {
     return {
@@ -757,8 +1001,14 @@ export async function createAdminUserApi(userData: AdminUser): Promise<{
   success: boolean;
   users: AdminUser[];
   message?: string;
+  errors?: any[];
 }> {
-  const updatedList = saveLocalAdminUser(userData);
+  if (!userData.name || userData.name.trim().length < 2) {
+    return { success: false, users: getLocalAdminUsers(), message: 'Staff name must be at least 2 characters.' };
+  }
+  if (!userData.email || !userData.email.includes('@')) {
+    return { success: false, users: getLocalAdminUsers(), message: 'Please provide a valid staff email address.' };
+  }
 
   try {
     const res = await fetch(`${API_BASE}/auth/admin/users`, {
@@ -766,13 +1016,28 @@ export async function createAdminUserApi(userData: AdminUser): Promise<{
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     });
-    if (res.ok) {
-      const data = await res.json();
-      return { success: true, users: updatedList, message: data.message || 'Staff account created' };
-    }
-  } catch {}
 
-  return { success: true, users: updatedList, message: 'Staff account onboarded' };
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data?.success) {
+      const updatedList = saveLocalAdminUser(data.user || userData);
+      return { success: true, users: updatedList, message: data.message || 'Staff account created successfully' };
+    }
+
+    if (data && !data.success) {
+      return {
+        success: false,
+        users: getLocalAdminUsers(),
+        message: data.message || 'Failed to create staff account',
+        errors: data.errors,
+      };
+    }
+  } catch {
+    // Local storage fallback
+  }
+
+  const updatedList = saveLocalAdminUser(userData);
+  return { success: true, users: updatedList, message: 'Staff account onboarded (cached)' };
 }
 
 export async function updateAdminUserApi(
@@ -781,46 +1046,107 @@ export async function updateAdminUserApi(
 ): Promise<{
   success: boolean;
   users: AdminUser[];
+  message?: string;
 }> {
-  const updatedList = updateLocalAdminUser(id, updates);
+  if (!id) {
+    return { success: false, users: getLocalAdminUsers(), message: 'Staff ID is required' };
+  }
 
   try {
-    await fetch(`${API_BASE}/auth/admin/users/${id}`, {
+    const res = await fetch(`${API_BASE}/auth/admin/users/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
-  } catch {}
 
-  return { success: true, users: updatedList };
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        users: getLocalAdminUsers(),
+        message: data.message || 'Failed to update staff account',
+      };
+    }
+  } catch {
+    // Local storage fallback
+  }
+
+  const updatedList = updateLocalAdminUser(id, updates);
+  return { success: true, users: updatedList, message: 'Staff account updated' };
 }
 
 export async function deleteAdminUserApi(id: string): Promise<{
   success: boolean;
   users: AdminUser[];
+  message?: string;
 }> {
-  const updatedList = deleteLocalAdminUser(id);
+  if (!id) {
+    return { success: false, users: getLocalAdminUsers(), message: 'Staff ID is required' };
+  }
+
+  if (id === 'usr_super_01') {
+    return {
+      success: false,
+      users: getLocalAdminUsers(),
+      message: 'The primary system Super Admin account cannot be deleted.',
+    };
+  }
 
   try {
-    await fetch(`${API_BASE}/auth/admin/users/${id}`, {
+    const res = await fetch(`${API_BASE}/auth/admin/users/${id}`, {
       method: 'DELETE',
     });
-  } catch {}
 
-  return { success: true, users: updatedList };
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        users: getLocalAdminUsers(),
+        message: data.message || 'Failed to delete staff member',
+      };
+    }
+  } catch {
+    // Local storage fallback
+  }
+
+  const updatedList = deleteLocalAdminUser(id);
+  return { success: true, users: updatedList, message: 'Staff account deleted' };
 }
 
 export async function toggleAdminUserStatusApi(id: string): Promise<{
   success: boolean;
   users: AdminUser[];
+  message?: string;
 }> {
-  const updatedList = toggleLocalAdminUserStatus(id);
+  if (!id) {
+    return { success: false, users: getLocalAdminUsers(), message: 'Staff ID is required' };
+  }
+
+  if (id === 'usr_super_01') {
+    return {
+      success: false,
+      users: getLocalAdminUsers(),
+      message: 'The primary system Super Admin account cannot be deactivated.',
+    };
+  }
 
   try {
-    await fetch(`${API_BASE}/auth/admin/users/${id}/status`, {
+    const res = await fetch(`${API_BASE}/auth/admin/users/${id}/status`, {
       method: 'PATCH',
     });
-  } catch {}
 
-  return { success: true, users: updatedList };
+    const data = await res.json().catch(() => null);
+    if (!res.ok && data && !data.success) {
+      return {
+        success: false,
+        users: getLocalAdminUsers(),
+        message: data.message || 'Failed to change staff status',
+      };
+    }
+  } catch {
+    // Local storage fallback
+  }
+
+  const updatedList = toggleLocalAdminUserStatus(id);
+  return { success: true, users: updatedList, message: 'Staff status updated' };
 }

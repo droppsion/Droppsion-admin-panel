@@ -64,6 +64,11 @@ export default function AdminOrdersPage() {
 
   const handleStatusChange = async (orderId: string, newStatus: AdminOrder['status']) => {
     const res = await updateOrderStatusApi(orderId, newStatus);
+    if (!res.success) {
+      setToastMessage(`Update Failed: ${res.message || 'Could not update status'}`);
+      setTimeout(() => setToastMessage(null), 4000);
+      return;
+    }
     setOrders(res.orders);
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status: newStatus });
@@ -75,12 +80,16 @@ export default function AdminOrdersPage() {
   const confirmDelete = async () => {
     if (!deletingOrder) return;
     const res = await deleteAdminOrderApi(deletingOrder.id);
-    setOrders(res.orders);
-    setToastMessage(`Order "${deletingOrder.id}" removed from records.`);
-    setDeletingOrder(null);
-    if (selectedOrder?.id === deletingOrder.id) {
-      setSelectedOrder(null);
+    if (!res.success) {
+      setToastMessage(`Delete Failed: ${res.message || 'Could not delete order'}`);
+    } else {
+      setOrders(res.orders);
+      setToastMessage(`Order "${deletingOrder.id}" removed from records.`);
+      if (selectedOrder?.id === deletingOrder.id) {
+        setSelectedOrder(null);
+      }
     }
+    setDeletingOrder(null);
     setTimeout(() => setToastMessage(null), 3500);
   };
 

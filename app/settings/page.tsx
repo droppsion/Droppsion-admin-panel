@@ -95,6 +95,11 @@ export default function AdminSettingsPage() {
     };
 
     const res = await createAdminUserApi(newStaff);
+    if (!res.success) {
+      setStaffMessage(`Error: ${res.message || 'Could not create staff account'}`);
+      setTimeout(() => setStaffMessage(null), 4000);
+      return;
+    }
     setStaffList(res.users);
     setIsStaffModalOpen(false);
     setNewStaffName('');
@@ -105,6 +110,11 @@ export default function AdminSettingsPage() {
 
   const handleToggleStaffStatus = async (id: string) => {
     const res = await toggleAdminUserStatusApi(id);
+    if (!res.success) {
+      setStaffMessage(`Protection Error: ${res.message || 'Cannot change staff status'}`);
+      setTimeout(() => setStaffMessage(null), 4000);
+      return;
+    }
     setStaffList(res.users);
     const updated = res.users.find((u) => u.id === id);
     setStaffMessage(`Account for ${updated?.name} is now ${updated?.status?.toUpperCase()}.`);
@@ -114,8 +124,12 @@ export default function AdminSettingsPage() {
   const confirmDeleteStaff = async () => {
     if (!deletingUser) return;
     const res = await deleteAdminUserApi(deletingUser.id);
-    setStaffList(res.users);
-    setStaffMessage(`Account for ${deletingUser.name} deleted.`);
+    if (!res.success) {
+      setStaffMessage(`Protection Error: ${res.message || 'Cannot delete staff member'}`);
+    } else {
+      setStaffList(res.users);
+      setStaffMessage(`Account for ${deletingUser.name} deleted.`);
+    }
     setDeletingUser(null);
     setTimeout(() => setStaffMessage(null), 3500);
   };

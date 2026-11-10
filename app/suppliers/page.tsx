@@ -111,6 +111,11 @@ export default function AdminSuppliersPage() {
       };
 
       const res = await createAdminSupplierApi(newSup);
+      if (!res.success) {
+        setToastMessage(`Validation Failed: ${res.message || 'Could not create supplier'}`);
+        setTimeout(() => setToastMessage(null), 4000);
+        return;
+      }
       setSuppliers(res.suppliers);
       setToastMessage(`Supplier "${newSup.name}" onboarded and connected.`);
     } else {
@@ -126,6 +131,11 @@ export default function AdminSuppliersPage() {
       };
 
       const res = await updateAdminSupplierApi(editingId!, updates);
+      if (!res.success) {
+        setToastMessage(`Update Failed: ${res.message || 'Could not update supplier'}`);
+        setTimeout(() => setToastMessage(null), 4000);
+        return;
+      }
       setSuppliers(res.suppliers);
       setToastMessage(`Supplier "${formName}" updated successfully.`);
     }
@@ -149,8 +159,12 @@ export default function AdminSuppliersPage() {
   const confirmDelete = async () => {
     if (!deletingSupplier) return;
     const res = await deleteAdminSupplierApi(deletingSupplier.id);
-    setSuppliers(res.suppliers);
-    setToastMessage(`Supplier "${deletingSupplier.name}" removed from network.`);
+    if (!res.success) {
+      setToastMessage(`Delete Failed: ${res.message || 'Could not delete supplier'}`);
+    } else {
+      setSuppliers(res.suppliers);
+      setToastMessage(`Supplier "${deletingSupplier.name}" removed from network.`);
+    }
     setDeletingSupplier(null);
     setTimeout(() => setToastMessage(null), 3500);
   };

@@ -85,10 +85,20 @@ export default function AdminCouponsPage() {
 
     if (modalMode === 'create') {
       const res = await createAdminCouponApi(payload);
+      if (!res.success) {
+        setToastMessage(`Validation Failed: ${res.message || 'Could not create coupon'}`);
+        setTimeout(() => setToastMessage(null), 4000);
+        return;
+      }
       setCoupons(res.coupons);
       setToastMessage(`Coupon code "${payload.code}" created and active.`);
     } else {
       const res = await updateAdminCouponApi(editingCode!, payload);
+      if (!res.success) {
+        setToastMessage(`Update Failed: ${res.message || 'Could not update coupon'}`);
+        setTimeout(() => setToastMessage(null), 4000);
+        return;
+      }
       setCoupons(res.coupons);
       setToastMessage(`Coupon code "${payload.code}" updated successfully.`);
     }
@@ -108,8 +118,12 @@ export default function AdminCouponsPage() {
   const confirmDelete = async () => {
     if (!deletingCoupon) return;
     const res = await deleteAdminCouponApi(deletingCoupon.code);
-    setCoupons(res.coupons);
-    setToastMessage(`Coupon "${deletingCoupon.code}" permanently deleted.`);
+    if (!res.success) {
+      setToastMessage(`Delete Failed: ${res.message || 'Could not delete coupon'}`);
+    } else {
+      setCoupons(res.coupons);
+      setToastMessage(`Coupon "${deletingCoupon.code}" permanently deleted.`);
+    }
     setDeletingCoupon(null);
     setTimeout(() => setToastMessage(null), 3500);
   };

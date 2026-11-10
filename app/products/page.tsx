@@ -184,6 +184,11 @@ export default function AdminProductsPage() {
       };
 
       const res = await createAdminProductApi(newProduct);
+      if (!res.success) {
+        setToastMessage(`Validation Failed: ${res.message || 'Could not create product'}`);
+        setTimeout(() => setToastMessage(null), 4000);
+        return;
+      }
       setProducts((prev) => [newProduct, ...prev]);
       setToastMessage(`Product "${newProduct.title}" created and activated.`);
     } else {
@@ -211,6 +216,11 @@ export default function AdminProductsPage() {
       };
 
       const res = await updateAdminProductApi(formData.id, updates);
+      if (!res.success) {
+        setToastMessage(`Validation Failed: ${res.message || 'Could not update product'}`);
+        setTimeout(() => setToastMessage(null), 4000);
+        return;
+      }
       setProducts(res.products);
       setToastMessage(`Product "${formData.title}" updated successfully.`);
     }
@@ -235,8 +245,12 @@ export default function AdminProductsPage() {
   const confirmDelete = async () => {
     if (!deletingProduct) return;
     const res = await deleteAdminProductApi(deletingProduct.id);
-    setProducts(res.products);
-    setToastMessage(`Product "${deletingProduct.title}" permanently removed.`);
+    if (!res.success) {
+      setToastMessage(`Delete Failed: ${res.message || 'Could not delete product'}`);
+    } else {
+      setProducts(res.products);
+      setToastMessage(`Product "${deletingProduct.title}" permanently removed.`);
+    }
     setDeletingProduct(null);
     setTimeout(() => setToastMessage(null), 3500);
   };
