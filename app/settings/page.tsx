@@ -494,22 +494,22 @@ export default function AdminSettingsPage() {
 
       {/* ADD STAFF MODAL */}
       {isStaffModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-fadeIn space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-gray-200 animate-fadeIn space-y-4 my-auto max-h-[92vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 shrink-0">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-[#FF4D00]" />
                 <h3 className="text-sm font-bold text-gray-950">Add Admin Team Member</h3>
               </div>
               <button
                 onClick={() => setIsStaffModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-gray-100 text-gray-400"
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-black"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAddStaff} className="space-y-3.5 text-xs">
+            <form onSubmit={handleAddStaff} className="space-y-3.5 text-xs overflow-y-auto">
               <div>
                 <label className="block text-gray-700 font-semibold mb-1">Full Name</label>
                 <input
@@ -569,8 +569,8 @@ export default function AdminSettingsPage() {
 
       {/* CONFIRM DELETE STAFF MODAL */}
       {deletingUser && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-200 text-center animate-fadeIn space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-sm w-full p-5 sm:p-6 shadow-2xl border border-gray-200 text-center animate-fadeIn space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>

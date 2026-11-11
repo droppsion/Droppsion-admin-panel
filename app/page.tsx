@@ -176,7 +176,7 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 text-xs">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs">
                   <div>
                     <p className="text-gray-400 text-[10px] uppercase font-bold">Avg Dispatch</p>
                     <p className="font-bold text-gray-900">{sup.averageFulfillmentHours} Hours</p>
@@ -267,7 +267,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[620px]">
             <thead className="bg-gray-50/80 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100">
               <tr>
                 <th className="py-3 px-6">Order ID</th>

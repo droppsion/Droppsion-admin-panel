@@ -14,6 +14,7 @@ import {
   Flame,
   LogOut,
   ShieldCheck,
+  X,
 } from 'lucide-react';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 
@@ -26,56 +27,86 @@ const NAV_ITEMS = [
   { label: 'System & API Settings', href: '/settings', icon: Settings },
 ];
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  isMobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function AdminSidebar({ isMobileOpen = false, onClose }: AdminSidebarProps) {
   const pathname = usePathname();
   const { user, logout } = useAdminAuth();
 
   return (
-    <aside className="w-64 bg-[#0B0F19] text-gray-300 flex flex-col shrink-0 border-r border-gray-800/80 min-h-screen select-none">
-      {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-gray-800/80 justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#FF4D00] to-orange-400 flex items-center justify-center text-white shadow-md shadow-orange-950/40">
-            <Flame className="w-4 h-4 fill-current" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-white text-base tracking-tight font-heading">Droppsion</span>
-              <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-orange-500/20 text-[#FF4D00] border border-orange-500/30">
-                Admin
-              </span>
+    <>
+      {/* Mobile / Tablet Backdrop Overlay */}
+      {isMobileOpen && (
+        <div
+          onClick={onClose}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity duration-300"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar Drawer */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-72 sm:w-64 bg-[#0B0F19] text-gray-300 flex flex-col shrink-0 border-r border-gray-800/80 min-h-screen select-none transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
+          isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+        }`}
+      >
+        {/* Brand Header */}
+        <div className="h-16 flex items-center px-5 sm:px-6 border-b border-gray-800/80 justify-between">
+          <Link href="/" onClick={onClose} className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#FF4D00] to-orange-400 flex items-center justify-center text-white shadow-md shadow-orange-950/40">
+              <Flame className="w-4 h-4 fill-current" />
             </div>
-            <p className="text-[9px] text-gray-500 font-mono tracking-wider">COMMAND CENTER</p>
-          </div>
-        </Link>
-      </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-white text-base tracking-tight font-heading">Droppsion</span>
+                <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-orange-500/20 text-[#FF4D00] border border-orange-500/30">
+                  Admin
+                </span>
+              </div>
+              <p className="text-[9px] text-gray-500 font-mono tracking-wider">COMMAND CENTER</p>
+            </div>
+          </Link>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 px-3 py-6 space-y-1.5">
-        <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">
-          Dropship Operations
-        </p>
+          {/* Close button for Mobile / Tablet */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/80 transition-colors"
+            aria-label="Close sidebar navigation"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
+        {/* Navigation Links */}
+        <nav className="flex-1 px-3 py-4 sm:py-6 space-y-1.5 overflow-y-auto">
+          <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3">
+            Dropship Operations
+          </p>
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                isActive
-                  ? 'bg-[#FF4D00] text-white shadow-md shadow-orange-950/40'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
-              }`}
-            >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-400'}`} />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-[#FF4D00] text-white shadow-md shadow-orange-950/40'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/60'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
       {/* Authenticated Admin Badge & Quick Sign Out */}
       <div className="p-4 border-t border-gray-800/80 space-y-3">
@@ -114,5 +145,6 @@ export function AdminSidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }

@@ -1,11 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Bell, LogOut, ShieldCheck, ChevronDown, User, ExternalLink } from 'lucide-react';
+import { Search, Bell, LogOut, ShieldCheck, ChevronDown, User, ExternalLink, Menu } from 'lucide-react';
 import { testBackendConnection } from '@/lib/api';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 
-export function AdminHeader() {
+interface AdminHeaderProps {
+  onToggleMobileNav?: () => void;
+}
+
+export function AdminHeader({ onToggleMobileNav }: AdminHeaderProps) {
   const { user, logout } = useAdminAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -54,19 +58,30 @@ export function AdminHeader() {
   }, []);
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200/90 flex items-center justify-between px-6 shrink-0 sticky top-0 z-30 shadow-2xs">
-      {/* Search Input */}
-      <div className="relative w-72 sm:w-96">
-        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-        <input
-          type="text"
-          placeholder="Search products, orders, customers, or SKUs..."
-          className="w-full pl-9 pr-4 py-2 bg-gray-50 hover:bg-gray-100/80 focus:bg-white text-xs rounded-xl border border-gray-200 focus:outline-none focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00] transition-colors"
-        />
+    <header className="h-16 bg-white border-b border-gray-200/90 flex items-center justify-between px-3 sm:px-6 shrink-0 sticky top-0 z-30 shadow-2xs">
+      {/* Left: Mobile Drawer Hamburger Toggle & Search */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 pr-2">
+        <button
+          onClick={onToggleMobileNav}
+          className="lg:hidden p-2 rounded-xl text-gray-600 hover:text-black hover:bg-gray-100 transition-colors shrink-0"
+          aria-label="Toggle navigation menu"
+        >
+          <Menu className="w-5 h-5 text-gray-800" />
+        </button>
+
+        {/* Search Input */}
+        <div className="relative w-full max-w-[190px] xs:max-w-[240px] sm:max-w-xs md:max-w-sm">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search SKUs, orders, products..."
+            className="w-full pl-9 pr-3 sm:pr-4 py-2 bg-gray-50 hover:bg-gray-100/80 focus:bg-white text-xs rounded-xl border border-gray-200 focus:outline-none focus:border-[#FF4D00] focus:ring-1 focus:ring-[#FF4D00] transition-colors truncate"
+          />
+        </div>
       </div>
 
       {/* Right Controls */}
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-2 sm:gap-3.5 shrink-0">
         {/* Real-time Backend & Storage Status Pill */}
         <div
           className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border text-[11px] font-semibold transition-colors ${

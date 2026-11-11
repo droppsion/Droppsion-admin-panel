@@ -189,7 +189,7 @@ export default function AdminCouponsPage() {
       {/* Coupons Table */}
       <div className="bg-white rounded-2xl border border-gray-200/90 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[640px]">
             <thead className="bg-gray-50/80 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100">
               <tr>
                 <th className="py-3 px-6">Promo Code</th>
@@ -279,29 +279,29 @@ export default function AdminCouponsPage() {
 
       {/* CREATE / EDIT MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden animate-fadeIn">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden animate-fadeIn my-auto max-h-[92vh] flex flex-col">
+            <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-[#FF4D00]">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-[#FF4D00] shrink-0">
                   <Tag className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-950">
-                    {modalMode === 'create' ? 'Create Promotional Voucher' : `Edit Coupon: ${editingCode}`}
+                  <h3 className="text-sm sm:text-base font-bold text-gray-950">
+                    {modalMode === 'create' ? 'Create Promotional Voucher' : `Edit: ${editingCode}`}
                   </h3>
-                  <p className="text-xs text-gray-400">Configure discount value, min spend, and active status</p>
+                  <p className="text-[11px] sm:text-xs text-gray-400">Configure discount value, min spend, and active status</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-black transition-colors"
+                className="p-1.5 sm:p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-black transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="p-6 space-y-4 text-xs">
+            <form onSubmit={handleFormSubmit} className="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto">
               <div>
                 <label className="block text-gray-700 font-semibold mb-1">Coupon Code</label>
                 <input
@@ -406,8 +406,8 @@ export default function AdminCouponsPage() {
 
       {/* DELETE CONFIRMATION MODAL */}
       {deletingCoupon && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 text-center animate-fadeIn space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-gray-200 text-center animate-fadeIn space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>

@@ -223,7 +223,7 @@ export default function AdminSuppliersPage() {
       )}
 
       {/* Supplier Scorecards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {suppliers.map((sup) => {
           const isTesting = testingId === sup.id;
           const isConnected = sup.status === 'connected';
@@ -231,7 +231,7 @@ export default function AdminSuppliersPage() {
           return (
             <div
               key={sup.id}
-              className={`bg-white rounded-3xl p-6 border shadow-2xs flex flex-col justify-between transition-all ${
+              className={`bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border shadow-2xs flex flex-col justify-between transition-all ${
                 isConnected ? 'border-gray-200/90' : 'border-gray-300 bg-gray-50/50 opacity-80'
               }`}
             >
@@ -344,29 +344,29 @@ export default function AdminSuppliersPage() {
 
       {/* CREATE / EDIT MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden animate-fadeIn">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden animate-fadeIn my-auto max-h-[92vh] flex flex-col">
+            <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-[#FF4D00]">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-[#FF4D00] shrink-0">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-950">
-                    {modalMode === 'create' ? 'Onboard Dropship Supplier' : `Edit Supplier: ${formName}`}
+                  <h3 className="text-sm sm:text-base font-bold text-gray-950">
+                    {modalMode === 'create' ? 'Onboard Dropship Supplier' : `Edit: ${formName}`}
                   </h3>
-                  <p className="text-xs text-gray-400">Configure logistics hub, API protocol, and fulfillment SLAs</p>
+                  <p className="text-[11px] sm:text-xs text-gray-400">Configure logistics hub, API protocol, and fulfillment SLAs</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-black transition-colors"
+                className="p-1.5 sm:p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-black transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="p-6 space-y-4 text-xs">
+            <form onSubmit={handleFormSubmit} className="p-4 sm:p-6 space-y-4 text-xs overflow-y-auto">
               <div>
                 <label className="block text-gray-700 font-semibold mb-1">Supplier Company Name</label>
                 <input
@@ -480,8 +480,8 @@ export default function AdminSuppliersPage() {
 
       {/* DELETE CONFIRMATION MODAL */}
       {deletingSupplier && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 text-center animate-fadeIn space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-gray-200 text-center animate-fadeIn space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>

@@ -65,7 +65,7 @@ function AdminLoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070A10] text-gray-200 flex flex-col justify-center items-center p-4 relative overflow-hidden select-none">
+    <div className="min-h-screen bg-[#070A10] text-gray-200 flex flex-col justify-center items-center p-3.5 sm:p-4 relative overflow-hidden select-none">
       {/* Background Decorative Ambient Gradients */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#FF4D00]/15 via-orange-500/5 to-transparent blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-[#FF4D00]/10 rounded-full blur-3xl pointer-events-none" />
@@ -101,7 +101,7 @@ function AdminLoginForm() {
         </div>
 
         {/* Login Card */}
-        <div className="bg-[#0E131F]/90 backdrop-blur-xl border border-gray-800/90 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="bg-[#0E131F]/90 backdrop-blur-xl border border-gray-800/90 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-2xl space-y-6">
           
           {/* Form Header */}
           <div className="border-b border-gray-800/80 pb-4">
@@ -214,7 +214,7 @@ function AdminLoginForm() {
               <span>Instant Quick-Fill Credentials</span>
             </p>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => handleQuickFill('admin@droppsion.com', 'admin123')}

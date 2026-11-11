@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAdminAuth } from '@/context/AdminAuthContext';
 import { AdminSidebar } from './AdminSidebar';
@@ -12,8 +12,14 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAdminAuth();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const isLoginPage = pathname === '/login';
+
+  // Automatically close mobile sidebar when route changes
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     // Automatically purge any old mock test data from client cache
@@ -56,13 +62,16 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
   // Authenticated: Render protected admin layout
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
-      {/* Left Dark Sidebar */}
-      <AdminSidebar />
+      {/* Left Dark Sidebar (drawer on mobile/tablet, permanent on desktop) */}
+      <AdminSidebar
+        isMobileOpen={isMobileNavOpen}
+        onClose={() => setIsMobileNavOpen(false)}
+      />
 
       {/* Right Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <AdminHeader />
-        <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
+        <AdminHeader onToggleMobileNav={() => setIsMobileNavOpen((prev) => !prev)} />
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

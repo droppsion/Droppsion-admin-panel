@@ -156,11 +156,11 @@ export default function AdminOrdersPage() {
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-[#FF4D00]"
+            className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 focus:outline-none focus:border-[#FF4D00] flex-1 sm:flex-initial"
           >
             <option value="all">All Statuses</option>
             <option value="confirmed">Confirmed</option>
@@ -170,7 +170,7 @@ export default function AdminOrdersPage() {
             <option value="cancelled">Cancelled</option>
           </select>
 
-          <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
+          <span className="text-xs text-gray-400 font-medium whitespace-nowrap shrink-0">
             Showing <strong>{filteredOrders.length}</strong> orders
           </span>
         </div>
@@ -179,7 +179,7 @@ export default function AdminOrdersPage() {
       {/* Orders Table */}
       <div className="bg-white rounded-2xl border border-gray-200/90 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[760px]">
             <thead className="bg-gray-50/80 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-100">
               <tr>
                 <th className="py-3 px-6">Order ID</th>
@@ -320,19 +320,19 @@ export default function AdminOrdersPage() {
 
       {/* ORDER DETAILS INSPECTION MODAL */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full shadow-2xl border border-gray-200 overflow-hidden animate-fadeIn">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full shadow-2xl border border-gray-200 overflow-hidden animate-fadeIn my-auto max-h-[92vh] flex flex-col">
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-[#FF4D00]">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center text-[#FF4D00] shrink-0">
                   <ShoppingBag className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-950 font-mono">
+                  <h3 className="text-sm sm:text-base font-bold text-gray-950 font-mono">
                     Order {selectedOrder.id}
                   </h3>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-[11px] sm:text-xs text-gray-400">
                     Placed {formatDate(selectedOrder.createdAt)}
                   </p>
                 </div>
@@ -342,7 +342,7 @@ export default function AdminOrdersPage() {
                 <StatusBadge status={selectedOrder.status} />
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-black transition-colors"
+                  className="p-1.5 sm:p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-black transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -350,11 +350,11 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-5 text-xs max-h-[75vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 text-xs overflow-y-auto">
               
               {/* Customer & Shipping Summary */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-1.5">
                   <div className="flex items-center gap-1.5 font-bold text-gray-900 mb-1">
                     <User className="w-3.5 h-3.5 text-[#FF4D00]" />
                     <span>Customer Details</span>
@@ -363,7 +363,7 @@ export default function AdminOrdersPage() {
                   <p className="text-gray-500 font-mono text-[11px]">{selectedOrder.customerEmail}</p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-1.5">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-gray-50 border border-gray-100 space-y-1.5">
                   <div className="flex items-center gap-1.5 font-bold text-gray-900 mb-1">
                     <MapPin className="w-3.5 h-3.5 text-[#FF4D00]" />
                     <span>Destination</span>
@@ -376,7 +376,7 @@ export default function AdminOrdersPage() {
               </div>
 
               {/* Carrier Tracking Banner */}
-              <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 flex items-center justify-between">
+              <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                 <div className="flex items-center gap-2">
                   <Truck className="w-4 h-4 text-blue-600" />
                   <span className="font-bold text-blue-900">{selectedOrder.carrier}</span>
@@ -468,8 +468,8 @@ export default function AdminOrdersPage() {
 
       {/* DELETE CONFIRMATION MODAL */}
       {deletingOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 text-center animate-fadeIn space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-gray-200 text-center animate-fadeIn space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-6 h-6" />
             </div>
